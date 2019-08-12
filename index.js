@@ -1,16 +1,17 @@
 
 function EventEmitter() {
     this.listeners = {};
-    this.maxListener = 11;
+    this.maxListener = 2;
 }
 
 EventEmitter.prototype.on = function (event, cb) {
-    // 是否需要通过this访问
-    if (listeners[event].length >= this.maxListener) {
-        throw new Error('监听器的最大数量是%d,您已超出限制', this.maxListener)
+    var listeners = this.listeners;
+    // debugger;
+    if (listeners[event] && listeners[event].length >= this.maxListener) {
+        throw console.error('监听器的最大数量是%d,您已超出限制', this.maxListener)
     }
     if (listeners[event] instanceof Array) {
-        if (!listeners[event].indexOf(cb)) {
+        if (listeners[event].indexOf(cb) === -1) {
             listeners[event].push(cb);
         }
     } else {
@@ -32,20 +33,25 @@ EventEmitter.prototype.setMaxListeners = function (num) {
 }
 
 EventEmitter.prototype.removeListener = function (event, listener) {
-    var i = listeners[event].indexOf(listener);
-    if (i > 0) {
+    var listeners = this.listeners;
+    var arr = listeners[event] || [];
+    var i = arr.indexOf(listener);
+    if (i >= 0) {
         listeners[event].splice(i, 1);
     }
 }
 
 EventEmitter.prototype.removeAllListener = function (event) {
-    listeners[event] = [];
+    this.listeners[event] = [];
 }
 
 EventEmitter.prototype.once = function (event, listener) {
     var self = this;
-    this.on(event, function () {
-        listener();
-        self.removeListener(event, listener);
-    })
+    function fn() {
+        var args = Array.prototype.slice.call(arguments);
+        listener.apply(null, args);
+        self.removeListener(event, fn);
+    }
+    this.on(event, fn)
 }
+
