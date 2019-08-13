@@ -28,6 +28,10 @@ EventEmitter.prototype.emit = function (event) {
     });
 }
 
+EventEmitter.prototype.listeners = function (event) {
+    return this.listeners[event];
+}
+
 EventEmitter.prototype.setMaxListeners = function (num) {
     this.maxListener = num;
 }
